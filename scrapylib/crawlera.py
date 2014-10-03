@@ -1,6 +1,7 @@
 from collections import defaultdict
 import warnings
 import os
+import re
 
 from w3lib.http import basic_auth_header
 from scrapy import log, signals
@@ -17,6 +18,7 @@ class CrawleraMiddleware(object):
     # Handle crawlera server failures
     connection_refused_delay = 90
     preserve_delay = False
+    https = False
 
     _settings = [
         ('user', str),
@@ -25,6 +27,7 @@ class CrawleraMiddleware(object):
         ('maxbans', int),
         ('download_timeout', int),
         ('preserve_delay', bool),
+        ('https', bool),
     ]
 
     def __init__(self, crawler):
@@ -119,6 +122,8 @@ class CrawleraMiddleware(object):
             request.headers['Proxy-Authorization'] = self._proxyauth
             if self.job_id:
                 request.headers['X-Crawlera-Jobid'] = self.job_id
+            if self.https:
+                request.headers['X-Crawlera-Use-HTTPS'] = '1'
 
     def process_response(self, request, response, spider):
         if not self._is_enabled_for_request(request):
