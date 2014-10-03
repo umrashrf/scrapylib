@@ -272,3 +272,22 @@ class CrawleraMiddlewareTestCase(TestCase):
         req1 = Request('http://www.scrapytest.org')
         self.assertEqual(mw1.process_request(req1, self.spider), None)
         self.assertEqual(req1.headers.get('X-Crawlera-Jobid'), '2816')
+
+    def test_https_header(self):
+        # without https enabled
+        self.spider.crawlera_enabled = True
+        crawler = self._mock_crawler(self.settings)
+        mw = self.mwcls.from_crawler(crawler)
+        mw.open_spider(self.spider)
+        req = Request('https://www.scrapytest.org/')
+        self.assertEqual(mw.process_request(req, self.spider), None)
+        self.assertNotEqual(req.headers.get('X-Crawlera-Use-HTTPS'), '1')
+
+        # with https enabled
+        self.spider.crawlera_https = True
+        crawler1 = self._mock_crawler(self.settings)
+        mw1 = self.mwcls.from_crawler(crawler)
+        mw1.open_spider(self.spider)
+        req1 = Request('https://www.scrapytest.org/')
+        self.assertEqual(mw1.process_request(req1, self.spider), None)
+        self.assertEqual(req1.headers.get('X-Crawlera-Use-HTTPS'), '1')
